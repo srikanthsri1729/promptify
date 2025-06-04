@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt History - Imaginative Canvas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/imaginative_canvas_logo.jpg') }}" alt="Imaginative Canvas Logo" class="me-2 logo">
+                <span>Imaginative Canvas</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('how_to_use') }}">Get Started Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('gallery') }}">Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('history') }}">History</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="nav-link">Welcome, {{ current_user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('signup') }}">Sign Up</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <br><br>
+    <div class="container-fluid main-container pt-5">
+        <header class="header text-center py-5">
+            <h1 class="display-4 fw-bold text-white">Prompt History</h1>
+            <p class="lead text-light">Review and reuse your past creative prompts</p>
+        </header>
+
+        <section class="card shadow-lg p-4 mb-5">
+            {% if current_user.is_authenticated %}
+                {% if prompts %}
+                    <h2 class="card-title text-center mb-4">Your Recent Prompts</h2>
+                    <div class="d-flex justify-content-end mb-3">
+                        <button id="delete-all-btn" class="btn btn-danger me-2">Delete All</button>
+                        <button id="delete-selected-btn" class="btn btn-warning">Delete Selected</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col"><input type="checkbox" id="select-all"></th>
+                                    <th scope="col">Prompt</th>
+                                    <th scope="col">Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prompt in prompts %}
+                                    <tr>
+                                        <td><input type="checkbox" class="prompt-checkbox" value="{{ prompt.id }}"></td>
+                                        <td class="prompt-text" style="cursor: pointer;" data-prompt="{{ prompt.prompt }}">{{ prompt.prompt }}</td>
+                                        <td>{{ prompt.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-center lead">No prompts found. Start creating in the Prompt Studio!</p>
+                    <div class="text-center">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Prompt Studio</a>
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-center lead">Please log in to view your prompt history.</p>
+                <div class="text-center">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">Log In</a>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <!-- Bootstrap 5 JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Reuse prompt by clicking
+        document.querySelectorAll('.prompt-text').forEach(cell => {
+            cell.addEventListener('click', () => {
+                const prompt = cell.getAttribute('data-prompt');
+                sessionStorage.setItem('selectedPrompt', prompt);
+                window.location.href = '/';
+            });
+        });
+
+        // Select all checkboxes
+        document.getElementById('select-all').addEventListener('change', (e) => {
+            document.querySelectorAll('.prompt-checkbox').forEach(checkbox => {
+                checkbox.checked = e.target.checked;
+            });
+        });
+
+        // Delete all prompts
+        document.getElementById('delete-all-btn')?.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete all prompts?')) {
+                fetch('/delete_all_prompts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error deleting all prompts:', error);
+                        alert('Failed to delete prompts.');
+                    });
+            }
+        });
+
+        // Delete selected prompts
+        document.getElementById('delete-selected-btn')?.addEventListener('click', () => {
+            const selected = Array.from(document.querySelectorAll('.prompt-checkbox:checked')).map(cb => cb.value);
+            if (selected.length === 0) {
+                alert('Please select at least one prompt to delete.');
+                return;
+            }
+            if (confirm(`Are you sure you want to delete ${selected.length} prompt(s)?`)) {
+                fetch('/delete_selected_prompts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt_ids: selected })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error deleting selected prompts:', error);
+                        alert('Failed to delete prompts.');
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

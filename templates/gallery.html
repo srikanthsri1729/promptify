@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Gallery - Imaginative Canvas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/imaginative_canvas_logo.jpg') }}" alt="Imaginative Canvas Logo" class="me-2 logo">
+                <span>Imaginative Canvas</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'how_to_use' %}active{% endif %}" href="{{ url_for('how_to_use') }}">Get Started Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'gallery' %}active{% endif %}" href="{{ url_for('gallery') }}">Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'history' %}active{% endif %}" href="{{ url_for('history') }}">History</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="nav-link">Welcome, {{ current_user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'signup' %}active{% endif %}" href="{{ url_for('signup') }}">Sign Up</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid main-container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <header class="header text-center py-5">
+            <h1 class="display-4 fw-bold text-white">My Gallery</h1>
+            <p class="lead text-light">Your Collection of Creative Masterpieces</p>
+        </header>
+
+        {% if not current_user.is_authenticated %}
+            <section class="card shadow-lg p-4 mb-5 position-relative">
+                <!-- Blurred Placeholder Gallery -->
+                <div class="row g-3 blurred-gallery" style="filter: blur(5px);">
+                    {% for i in range(6) %}
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="card shadow-sm">
+                                <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Placeholder Image">
+                                <div class="card-body">
+                                    <p class="card-text"><small>Prompt: Sample Image</small></p>
+                                    <p class="card-text"><small>Created: 2025-05-06</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <!-- Overlay with Login Prompt -->
+                <div class="login-overlay position-absolute top-50 start-50 translate-middle text-center">
+                    <h2 class="card-title mb-4">To access Your Gallery you need to login</h2>
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">Log In</a>
+                </div>
+            </section>
+        {% else %}
+            <section class="card shadow-lg p-4 mb-5">
+                {% if images %}
+                    <h2 class="card-title text-center mb-4">Your Saved Images</h2>
+                    <div class="d-flex flex-row align-items-center gap-2 mb-4">
+                        <div class="image-size-controls d-flex flex-row align-items-center gap-2">
+                            <label class="form-label mb-0">Download Size:</label>
+                            <input type="number" id="global-width" class="form-control size-input" placeholder="Width (512)" min="1" value="512" aria-label="Image width">
+                            <input type="number" id="global-height" class="form-control size-input" placeholder="Height (512)" min="1" value="512" aria-label="Image height">
+                        </div>
+                        <button id="delete-all-btn" class="btn btn-danger ms-auto">Delete All Images</button>
+                    </div>
+                    <div class="row g-3">
+                        {% for image in images %}
+                            <div class="col-6 col-md-4 col-lg-3 image-item">
+                                <div class="card shadow-sm">
+                                    <img src="{{ url_for('static', filename='Images/' + image.file_path.split('/')[-1]) }}" class="card-img-top" alt="Saved Image">
+                                    <div class="card-body image-options">
+                                        <button class="download-btn btn btn-sm btn-danger w-100 mb-2" data-filename="{{ image.file_path.split('/')[-1] }}">Download</button>
+                                        <button class="view-btn btn btn-sm btn-outline-light w-100 mb-2" data-url="{{ url_for('static', filename='Images/' + image.file_path.split('/')[-1]) }}">View</button>
+                                        <button class="delete-btn btn btn-sm btn-outline-danger w-100" data-filename="{{ image.file_path.split('/')[-1] }}">Delete from Gallery</button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center lead">No images saved yet. Start creating in the Prompt Studio!</p>
+                    <div class="text-center">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Prompt Studio</a>
+                    </div>
+                {% endif %}
+            </section>
+        {% endif %}
+    </div>
+
+    <!-- Bootstrap 5 JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Auto-dismiss flash messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', () => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.remove('show');
+                    alert.classList.add('fade');
+                    setTimeout(() => alert.remove(), 150);
+                }, 5000);
+            });
+        });
+    </script>
+
+    {% if current_user.is_authenticated %}
+    <script>
+        // Download, View, and Delete button functionality for authenticated users
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filename = btn.getAttribute('data-filename');
+                const width = document.getElementById('global-width').value || 512;
+                const height = document.getElementById('global-height').value || 512;
+                fetch('/download_image/' + filename, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ width, height })
+                }).then(response => response.blob())
+                  .then(blob => {
+                      const link = document.createElement('a');
+                      link.href = URL.createObjectURL(blob);
+                      link.download = filename;
+                      link.click();
+                  })
+                  .catch(error => console.error('Download error:', error));
+            });
+        });
+
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const url = btn.getAttribute('data-url');
+                window.open(url, '_blank');
+            });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filename = btn.getAttribute('data-filename');
+                if (confirm('Are you sure you want to delete this image from your gallery?')) {
+                    fetch('/delete_image/' + filename, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    }).then(response => response.json())
+                      .then(data => {
+                          if (data.success) {
+                              btn.closest('.image-item').remove();
+                              // Check if there are any images left
+                              const imageItems = document.querySelectorAll('.image-item');
+                              if (imageItems.length === 0) {
+                                  const gallerySection = document.querySelector('.card.shadow-lg.p-4.mb-5');
+                                  gallerySection.innerHTML = `
+                                      <p class="text-center lead">No images saved yet. Start creating in the Prompt Studio!</p>
+                                      <div class="text-center">
+                                          <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Prompt Studio</a>
+                                      </div>
+                                  `;
+                              }
+                          } else {
+                              alert('Failed to delete image: ' + data.message);
+                          }
+                      })
+                      .catch(error => console.error('Delete error:', error));
+                }
+            });
+        });
+
+        // Delete All Images functionality
+        document.getElementById('delete-all-btn').addEventListener('click', () => {
+            const imageItems = document.querySelectorAll('.image-item');
+            if (imageItems.length === 0) {
+                alert('There are no images to delete.');
+                return;
+            }
+            if (confirm('Are you sure you want to delete all images from your gallery? This action cannot be undone.')) {
+                fetch('/delete_all_images', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          const gallerySection = document.querySelector('.card.shadow-lg.p-4.mb-5');
+                          gallerySection.innerHTML = `
+                              <p class="text-center lead">No images saved yet. Start creating in the Prompt Studio!</p>
+                              <div class="text-center">
+                                  <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Prompt Studio</a>
+                              </div>
+                          `;
+                      } else {
+                          alert('Failed to delete all images: ' + data.message);
+                      }
+                  })
+                  .catch(error => console.error('Delete all error:', error));
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

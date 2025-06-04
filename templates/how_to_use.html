@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Use Imaginative Canvas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/imaginative_canvas_logo.jpg') }}" alt="Imaginative Canvas Logo" class="me-2 logo">
+                <span>Imaginative Canvas</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'how_to_use' %}active{% endif %}" href="{{ url_for('how_to_use') }}">Get Started Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'gallery' %}active{% endif %}" href="{{ url_for('gallery') }}">Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'history' %}active{% endif %}" href="{{ url_for('history') }}">History</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="nav-link">Welcome, {{ current_user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'signup' %}active{% endif %}" href="{{ url_for('signup') }}">Sign Up</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid main-container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <header class="header text-center py-5">
+            <h1 class="display-4 fw-bold text-white">Your Creative Journey with Imaginative Canvas</h1>
+            <p class="lead text-light">Learn How to Transform Your Words into Stunning Visual Art</p>
+        </header>
+
+        <!-- Introduction Section -->
+        <section class="card shadow-lg p-4 mb-5">
+            <h2 class="card-title text-center mb-4">Welcome to Imaginative Canvas</h2>
+            <p class="text-center lead">
+                Follow the journey of Leo Vistacreate, a visionary artist with a magical gift for turning words into art, as he uses Imaginative Canvas to create breathtaking artwork from a simple idea. This guide will walk you through each step, showing you how to craft, refine, visualize, and save your creative visions with ease.
+            </p>
+        </section>
+
+        <!-- Step-by-Step Guide -->
+        <section class="card shadow-lg p-4 mb-5">
+            <h2 class="card-title text-center mb-4">How to Create Your Masterpiece</h2>
+            <div class="row g-4">
+                <!-- Step 1: Craft Your Vision -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="h5">Step 1: Craft Your Vision</h3>
+                            <p>
+                                Leo starts with a spark of inspiration: “A majestic lion in a jungle.” In the “Craft Your Vision” textarea, type your idea—be it a scene, character, or concept. Use descriptive nouns and settings for best results (e.g., “A dragon in a volcanic lair”).
+                            </p>
+                            <p><strong>Tip:</strong> Avoid single-word prompts. Try “A castle at dusk” instead of “Castle.”</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 2: Expand Your Idea -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="h5">Step 2: Expand Your Idea</h3>
+                            <p>
+                                Leo clicks “Expand Prompt” and gets vivid variations like “A majestic lion prowling through a misty jungle, vines draping over ancient ruins.” This button generates four detailed versions of your prompt to spark creativity.
+                            </p>
+                            <p><strong>Tip:</strong> Click a suggestion to use it as your new prompt.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 3: Steer the Scene -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="h5">Step 3: Steer the Scene</h3>
+                            <p>
+                                Want a different setting? Leo enters “Make it a desert setting” and gets “A lion atop golden dunes under a scorching sun.” Use the “Steer Prompt” button to shift your scene’s context or environment.
+                            </p>
+                            <p><strong>Tip:</strong> Be specific, e.g., “futuristic city” or “winter landscape.”</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 4: Style Your Art -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="h5">Step 4: Style Your Art</h3>
+                            <p>
+                                Leo chooses “Cyberpunk, neon-lit” for a sci-fi lion in a vibrant jungle. Use the “Style Prompt” button to apply an artistic style like “dark fantasy,” “cartoon,” or “surreal.”
+                            </p>
+                            <p><strong>Tip:</strong> Combine styles, e.g., “minimalist, watercolor.”</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 5: Remove Unwanted Elements -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="h5">Step 5: Remove Unwanted Elements</h3>
+                            <p>
+                                Leo removes “dark themes” to keep the scene bright, getting “A lion in a sunlit jungle with vibrant flora.” Use the “Remove Negative” button to exclude elements you don’t want.
+                            </p>
+                            <p><strong>Tip:</strong> List specifics, e.g., “no fog, no rain.”</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 6: Generate and Save Images -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="h5">Step 6: Generate and Save Images</h3>
+                            <p>
+                                Leo generates two images, saves favorites to his gallery, and downloads at 1024x1024. Select 1–10 images with “Generate Images,” then save to your gallery or download with custom dimensions.
+                            </p>
+                            <p><strong>Tip:</strong> Log in to save images to your personal gallery!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="card shadow-lg p-4 mb-5">
+            <h2 class="card-title text-center mb-4">Frequently Asked Questions</h2>
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            Why are some images not generated?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            The image generation API may have rate limits or temporary issues. Try generating fewer images (e.g., 1–2) or wait a moment before retrying.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            How do I write better prompts?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Use vivid adjectives, specific settings, and clear subjects (e.g., “A golden dragon soaring over a misty mountain”). Avoid vague terms like “nice” or single words.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            Do I need to log in to use Imaginative Canvas?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            You can generate images without logging in, but signing up allows you to save images to your personal gallery and access them anytime.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                            How do I save images to my gallery?
+                        </button>
+                    </h2>
+                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            After generating images, click the “Save to Gallery” button below each image. You must be logged in to save images. View your saved images in the “My Gallery” section.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example Prompts Carousel -->
+        <section class="card shadow-lg p-4 mb-5">
+            <h2 class="card-title text-center mb-4">Inspiration Gallery</h2>
+            <div id="promptCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">A Dragon in a Volcanic Lair</h5>
+                                <p class="card-text">Imagine a fiery dragon amidst glowing lava flows.</p>
+                                <button class="btn btn-primary try-prompt" data-prompt="A dragon in a volcanic lair">Try This Prompt</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">A Futuristic City at Dusk</h5>
+                                <p class="card-text">Picture neon lights and towering skyscrapers.</p>
+                                <button class="btn btn-primary try-prompt" data-prompt="A futuristic city at dusk">Try This Prompt</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">A Mermaid in a Coral Reef</h5>
+                                <p class="card-text">Envision vibrant corals and shimmering scales.</p>
+                                <button class="btn btn-primary try-prompt" data-prompt="A mermaid in a coral reef">Try This Prompt</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#promptCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#promptCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Quick Tips Sidebar -->
+        <section class="card shadow-lg p-4 mb-5">
+            <h2 class="card-title text-center mb-4">Quick Tips for Success</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h3 class="h5">Do:</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">Use vivid adjectives (e.g., “radiant,” “ancient”)</li>
+                        <li class="list-group-item">Specify settings (e.g., “in a snowy forest”)</li>
+                        <li class="list-group-item">Save favorite images to your gallery</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h3 class="h5">Don’t:</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">Use single-word prompts (e.g., “Lion”)</li>
+                        <li class="list-group-item">Be overly vague (e.g., “Something nice”)</li>
+                        <li class="list-group-item">Ignore negative constraints</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="text-center mb-5">
+            <a href="{{ url_for('index') }}" class="btn btn-primary dynamic-btn">Start Creating Now</a>
+            <p class="lead mt-3 text-light">Your masterpiece is just a prompt away!</p>
+        </section>
+    </div>
+
+    <!-- Bootstrap 5 JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Handle "Try This Prompt" buttons
+        document.querySelectorAll('.try-prompt').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const prompt = btn.getAttribute('data-prompt');
+                sessionStorage.setItem('selectedPrompt', prompt);
+                window.location.href = '/';
+            });
+        });
+
+        // Auto-dismiss flash messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', () => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.remove('show');
+                    alert.classList.add('fade');
+                    setTimeout(() => alert.remove(), 150);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

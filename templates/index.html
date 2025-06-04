@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imaginative Canvas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/imaginative_canvas_logo.jpg') }}" alt="Imaginative Canvas Logo" class="me-2 logo">
+                <span>Imaginative Canvas</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'how_to_use' %}active{% endif %}" href="{{ url_for('how_to_use') }}">Get Started Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'gallery' %}active{% endif %}" href="{{ url_for('gallery') }}">Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'history' %}active{% endif %}" href="{{ url_for('history') }}">History</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="nav-link">Welcome, {{ current_user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'signup' %}active{% endif %}" href="{{ url_for('signup') }}">Sign Up</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid main-container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <header class="header text-center py-5">
+            <h1 class="display-4 fw-bold text-white">Imaginative Canvas</h1>
+            <p class="lead text-light">Transform Your Words into Stunning Visual Art</p>
+        </header>
+
+        <!-- Prompt Studio Section -->
+        <section class="prompt-studio card shadow-lg p-4 mb-5">
+            <h2 class="card-title text-center mb-4">Prompt Studio</h2>
+            <div class="mb-3">
+                <label for="prompt-input" class="form-label">Craft Your Vision:</label>
+                <textarea id="prompt-input" class="form-control w-100" rows="4" placeholder="A majestic lion in a jungle" aria-describedby="promptHelp"></textarea>
+                <div id="promptHelp" class="form-text">Describe your creative idea to generate unique images.</div>
+            </div>
+
+            <div class="buttons d-flex flex-column gap-3">
+                <button id="expand-btn" class="task-btn btn btn-primary">Expand Prompt</button>
+                
+                <div class="input-group d-flex flex-column flex-md-row gap-2">
+                    <input type="text" id="steer-input" class="form-control w-100" placeholder="Make it a desert setting" aria-label="Steer prompt input">
+                    <button id="steer-btn" class="task-btn btn btn-primary">Steer Prompt</button>
+                </div>
+                
+                <div class="input-group d-flex flex-column flex-md-row gap-2">
+                    <input type="text" id="style-input" class="form-control w-100" placeholder="Cyberpunk, atmospheric" aria-label="Style prompt input">
+                    <button id="style-btn" class="task-btn btn btn-primary">Style Prompt</button>
+                </div>
+                
+                <div class="input-group d-flex flex-column flex-md-row gap-2">
+                    <input type="text" id="negative-input" class="form-control w-100" placeholder="No dark themes" aria-label="Negative prompt input">
+                    <button id="negative-btn" class="task-btn btn btn-primary">Remove Negative</button>
+                </div>
+
+                <div class="input-group d-flex flex-column flex-md-row gap-2">
+                    <input type="number" id="num-images" class="form-control w-auto" min="1" max="10" value="1" placeholder="Number of images" aria-label="Number of images">
+                    <button id="generate-images-btn" class="task-btn btn btn-primary">Generate Images</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Processing Message Box -->
+        <div id="processing-box" class="processing-box card shadow-lg p-3 mb-5 hidden">
+            <div class="d-flex align-items-center gap-3">
+                <div class="spinner"></div>
+                <p class="mb-0">Creating Your Art... (This may take a moment)</p>
+            </div>
+            <button id="stop-btn" class="btn btn-danger mt-3">Stop Request</button>
+        </div>
+
+        <!-- Creative Outputs Section -->
+        <section class="creative-outputs card shadow-lg p-4 mb-5" id="suggestions-box">
+            <h2 class="card-title text-center mb-4">Creative Suggestions</h2>
+            <ul id="suggestions-list" class="list-group"></ul>
+        </section>
+
+        <!-- Image Gallery Section -->
+        <section class="image-gallery card shadow-lg p-4" id="images-box">
+            <h2 class="card-title text-center mb-4">Image Gallery</h2>
+            <div class="image-size-controls d-flex flex-row align-items-center gap-2 mb-4">
+                <label class="form-label mb-0">Download Size:</label>
+                <input type="number" id="global-width" class="form-control size-input" placeholder="Width (512)" min="1" value="512" aria-label="Image width">
+                <input type="number" id="global-height" class="form-control size-input" placeholder="Height (512)" min="1" value="512" aria-label="Image height">
+            </div>
+            <div id="images-list" class="row g-3"></div>
+        </section>
+    </div>
+
+    <!-- Bootstrap 5 JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        // Configure toastr options
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "5000",
+        };
+
+        // Auto-dismiss flash messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', () => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.remove('show');
+                    alert.classList.add('fade');
+                    setTimeout(() => alert.remove(), 150);
+                }, 5000);
+            });
+        });
+
+        let abortController = null;
+
+        // Auto-fill prompt from sessionStorage on page load
+        window.addEventListener('load', () => {
+            const prompt = sessionStorage.getItem('selectedPrompt');
+            if (prompt) {
+                document.getElementById('prompt-input').value = prompt;
+                sessionStorage.removeItem('selectedPrompt');
+            }
+        });
+
+        function disableButtons() {
+            document.querySelectorAll('.task-btn').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('disabled');
+            });
+            document.getElementById('processing-box').classList.remove('hidden');
+        }
+
+        function enableButtons() {
+            document.querySelectorAll('.task-btn').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('disabled');
+            });
+            document.getElementById('processing-box').classList.add('hidden');
+        }
+
+        function displaySuggestions(variations, btn, clearInput = null) {
+            const suggestionsList = document.getElementById('suggestions-list');
+            suggestionsList.innerHTML = '';
+            if (!Array.isArray(variations)) {
+                console.error('Variations is not an array:', variations);
+                suggestionsList.innerHTML = '<li class="list-group-item">Error: Unable to load suggestions.</li>';
+                toastr.error('Unable to load suggestions.');
+                enableButtons();
+                return;
+            }
+            variations.forEach((variation, index) => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item list-group-item-action';
+                li.textContent = `${index + 1}. ${variation}`;
+                li.addEventListener('click', () => {
+                    document.getElementById('prompt-input').value = variation;
+                    suggestionsList.innerHTML = '';
+                });
+                suggestionsList.appendChild(li);
+            });
+            enableButtons();
+            if (clearInput) clearInput.value = '';
+            toastr.success('Suggestions generated successfully!');
+        }
+
+        function displayImages(imageUrls, btn, prompt) {
+            const imagesList = document.getElementById('images-list');
+            imagesList.innerHTML = '';
+            imageUrls.forEach((url, index) => {
+                const div = document.createElement('div');
+                div.className = 'col-6 col-md-4 col-lg-3 image-item';
+                div.innerHTML = `
+                    <div class="card shadow-sm">
+                        <img src="${url}" class="card-img-top" alt="Generated Image ${index + 1}">
+                        <div class="card-body image-options">
+                            <button class="download-btn btn btn-sm btn-danger w-100 mb-2" data-url="${url}">Download</button>
+                            <button class="view-btn btn btn-sm btn-outline-light w-100 mb-2" data-url="${url}">View</button>
+                            {% if current_user.is_authenticated %}
+                                <button class="save-btn btn btn-sm btn-primary w-100" data-url="${url}" data-prompt="${prompt}">Save to Gallery</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                `;
+                imagesList.appendChild(div);
+            });
+            enableButtons();
+
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.getAttribute('data-url');
+                    const filename = url.split('/').pop();
+                    const width = document.getElementById('global-width').value || 512;
+                    const height = document.getElementById('global-height').value || 512;
+                    fetch('/download_image/' + filename, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ width, height })
+                    }).then(response => response.blob())
+                      .then(blob => {
+                          const link = document.createElement('a');
+                          link.href = URL.createObjectURL(blob);
+                          link.download = filename;
+                          link.click();
+                          toastr.success('Image downloaded successfully!');
+                      })
+                      .catch(error => {
+                          console.error('Download error:', error);
+                          toastr.error('Failed to download image.');
+                      });
+                });
+            });
+
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.getAttribute('data-url');
+                    window.open(url, '_blank');
+                });
+            });
+
+            document.querySelectorAll('.save-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.getAttribute('data-url');
+                    const prompt = btn.getAttribute('data-prompt');
+                    fetch('/save_image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ file_path: url, prompt })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                toastr.error(data.error);
+                            } else {
+                                toastr.success(data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Save error:', error);
+                            toastr.error('Failed to save image to gallery.');
+                        });
+                });
+            });
+
+            toastr.success('Images generated successfully!');
+        }
+
+        async function savePrompt(prompt) {
+            try {
+                const response = await fetch('/save_prompt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+                if (!response.ok) {
+                    console.error('Failed to save prompt:', response.statusText);
+                    toastr.error('Failed to save prompt.');
+                }
+            } catch (error) {
+                console.error('Error saving prompt:', error);
+                toastr.error('Error saving prompt.');
+            }
+        }
+
+        function handleRequest(endpoint, payload, displayFn, btn, clearInput = null) {
+            disableButtons();
+            abortController = new AbortController();
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+                signal: abortController.signal
+            }).then(response => {
+                // Check if response is a redirect to login
+                if (!response.ok && response.redirected && response.url.includes('/login')) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    console.error('Unexpected non-JSON response:', response.statusText);
+                    window.location.href = '/login';
+                    return;
+                }
+
+                return response.json();
+            }).then(data => {
+                if (!data) return; // Exit if redirected
+                if (data.error) {
+                    toastr.error(data.error);
+                    enableButtons();
+                    return;
+                }
+                if (endpoint === '/generate_images') {
+                    if (data.warning) {
+                        toastr.warning(data.warning);
+                    }
+                    displayFn(data.image_urls || [], btn, data.prompt);
+                } else {
+                    displayFn(data.variations || [], btn, clearInput);
+                }
+            }).catch(error => {
+                if (error.name !== 'AbortError') {
+                    console.error(`Error in ${endpoint}:`, error);
+                    toastr.error(`Error: ${error.message}`);
+                    enableButtons();
+                }
+            });
+        }
+
+        document.getElementById('stop-btn').addEventListener('click', () => {
+            if (abortController) {
+                abortController.abort();
+                enableButtons();
+                abortController = null;
+                toastr.info('Request stopped.');
+            }
+        });
+
+        document.getElementById('expand-btn').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            if (!prompt) {
+                toastr.warning('Please enter a prompt!');
+                return;
+            }
+            await savePrompt(prompt);
+            handleRequest('/expand_prompt', { prompt }, displaySuggestions, document.getElementById('expand-btn'));
+        });
+
+        document.getElementById('steer-btn').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            const steer = document.getElementById('steer-input').value.trim();
+            const steerInput = document.getElementById('steer-input');
+            if (!prompt || !steer) {
+                toastr.warning('Please enter both a prompt and a steer direction!');
+                return;
+            }
+            await savePrompt(prompt);
+            handleRequest('/steer_prompt', { prompt, steer }, displaySuggestions, document.getElementById('steer-btn'), steerInput);
+        });
+
+        document.getElementById('style-btn').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            const style = document.getElementById('style-input').value.trim();
+            const styleInput = document.getElementById('style-input');
+            if (!prompt || !style) {
+                toastr.warning('Please enter both a prompt and a style!');
+                return;
+            }
+            await savePrompt(prompt);
+            handleRequest('/style_prompt', { prompt, style }, displaySuggestions, document.getElementById('style-btn'), styleInput);
+        });
+
+        document.getElementById('negative-btn').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            const negative = document.getElementById('negative-input').value.trim();
+            const negativeInput = document.getElementById('negative-input');
+            if (!prompt || !negative) {
+                toastr.warning('Please enter both a prompt and a negative constraint!');
+                return;
+            }
+            await savePrompt(prompt);
+            handleRequest('/negative_prompt', { prompt, negative }, displaySuggestions, document.getElementById('negative-btn'), negativeInput);
+        });
+
+        document.getElementById('generate-images-btn').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            const num_images = document.getElementById('num-images').value;
+            if (!prompt) {
+                toastr.warning('Please enter a prompt!');
+                return;
+            }
+            if (!num_images || num_images < 1 || num_images > 10) {
+                toastr.warning('Please enter a number of images between 1 and 10!');
+                return;
+            }
+            await savePrompt(prompt);
+            handleRequest('/generate_images', { prompt, num_images }, displayImages, document.getElementById('generate-images-btn'));
+        });
+    </script>
+</body>
+</html>
